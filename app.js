@@ -3,6 +3,8 @@ var express = require("express");
 var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
+var compression = require("compression");
+var helmet = require("helmet");
 
 const connectToDatabase = require("./mongoose");
 
@@ -24,10 +26,25 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
+app.use(compression()); // Compress all routes
 
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
 app.use("/catalog", catalogRouter);
+
+app.use(
+  helmet.contentSecurityPolicy({
+    directives: {
+      "script-src": [
+        "'self'",
+        "https://code.jquery.com/",
+        "https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.1/umd/popper.min.js",
+        "https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js",
+        "cdn.jsdelivr.net/",
+      ],
+    },
+  })
+);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
